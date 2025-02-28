@@ -1,26 +1,44 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCourseInstructorDto } from './dto/create-course-instructor.dto';
 import { UpdateCourseInstructorDto } from './dto/update-course-instructor.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CourseInstructor } from './entities/course-instructor.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class CourseInstructorService {
-  create(createCourseInstructorDto: CreateCourseInstructorDto) {
-    return 'This action adds a new courseInstructor';
+  constructor(
+    @InjectRepository(CourseInstructor)
+    private readonly corseInstructorRepository: Repository<CourseInstructor>,
+  ) { }
+
+  async create(createCourseInstructorDto: CreateCourseInstructorDto) {
+    return await this.corseInstructorRepository.save(createCourseInstructorDto);
   }
 
-  findAll() {
-    return `This action returns all courseInstructor`;
+  async findAll() {
+    return await this.corseInstructorRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} courseInstructor`;
+  async findOne(id: number) {
+    return await this.corseInstructorRepository.findOne({ where: { id: id } });
   }
 
-  update(id: number, updateCourseInstructorDto: UpdateCourseInstructorDto) {
-    return `This action updates a #${id} courseInstructor`;
+  async update(
+    id: number,
+    updateCourseInstructorDto: UpdateCourseInstructorDto,
+  ) {
+    const courseInstructor = await this.corseInstructorRepository.findOne({
+      where: { id: id },
+    });
+    if (!courseInstructor) {
+      throw new Error('Course instructor ont found');
+    }
+    Object.assign(courseInstructor, updateCourseInstructorDto);
+    return this.corseInstructorRepository.save(courseInstructor);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} courseInstructor`;
+  async remove(id: number) {
+    return await this.corseInstructorRepository.delete(id);
   }
 }
